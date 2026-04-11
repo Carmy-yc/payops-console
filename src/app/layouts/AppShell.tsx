@@ -43,22 +43,23 @@ export function AppShell() {
         />
       </Sider>
 
-      <Layout>
+      <Layout className="app-shell__main">
         <Header className="app-shell__header">
-          <div>
+          <div className="app-shell__header-copy">
             <Title level={5} className="app-shell__header-title">
               支付业务演示骨架
             </Title>
             <Text type="secondary">当前阶段已完成项目初始化、路由与权限骨架</Text>
           </div>
 
-          <Space size="middle">
+          <Space size="small">
             <Tag color="blue">{currentUser?.roleName ?? '游客'}</Tag>
             <Space size="small">
-              <Avatar>{currentUser?.name?.slice(0, 1) ?? 'U'}</Avatar>
+              <Avatar size={28}>{currentUser?.name?.slice(0, 1) ?? 'U'}</Avatar>
               <Text>{currentUser?.name ?? '未登录'}</Text>
             </Space>
             <Button
+              size="small"
               onClick={() => {
                 logout();
                 navigate('/login', { replace: true });
