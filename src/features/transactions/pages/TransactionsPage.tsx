@@ -1,8 +1,8 @@
 import { Space, Typography } from 'antd';
 import { useMemo, useState } from 'react';
+import { useRefunds } from '../../refunds/store/RefundsProvider';
 import { TransactionFilters } from '../components/TransactionFilters';
 import { TransactionTable } from '../components/TransactionTable';
-import { mockOrders } from '../data/mock-orders';
 import {
   filterTransactions,
   paginateTransactions,
@@ -18,14 +18,15 @@ const defaultSorter: TransactionSorter = {
 };
 
 export function TransactionsPage() {
+  const { orders } = useRefunds();
   const [filters, setFilters] = useState<TransactionFiltersValue>({});
   const [current, setCurrent] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [sorter, setSorter] = useState<TransactionSorter>(defaultSorter);
 
   const filteredOrders = useMemo(
-    () => filterTransactions(mockOrders, filters),
-    [filters],
+    () => filterTransactions(orders, filters),
+    [filters, orders],
   );
 
   const sortedOrders = useMemo(
@@ -48,7 +49,7 @@ export function TransactionsPage() {
       </div>
 
       <TransactionFilters
-        totalCount={mockOrders.length}
+        totalCount={orders.length}
         filteredCount={filteredOrders.length}
         onSearch={(values) => {
           setFilters(values);

@@ -122,6 +122,26 @@ body {
   justify-content: flex-end;
 }
 
+.refunds-filters__actions {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+}
+
+.refunds-filters__action-item {
+  width: 100%;
+  margin-bottom: 24px !important;
+}
+
+.refunds-filters__action-item .ant-form-item-control-input-content {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.refund-modal__tip {
+  margin-bottom: 0 !important;
+}
+
 .login-page {
   display: flex;
   align-items: center;

@@ -57,9 +57,14 @@ export type RefundRecord = {
   orderId: string;
   amount: number;
   reason: string;
+  remark?: string;
   status: RefundStatus;
   reviewStatus: ReviewStatus;
+  createdBy?: string;
+  reviewedBy?: string;
+  reviewedAt?: string;
   createdAt: string;
+  source?: 'seed' | 'runtime';
 };
 
 export type TransactionFilters = {
@@ -81,4 +86,3 @@ export type TransactionSorter = {
   field: TransactionSortField | null;
   order: TransactionSortOrder;
 };
-
