@@ -1,5 +1,6 @@
 import { message, Space, Typography } from 'antd';
 import { useMemo, useState } from 'react';
+import { useAudit } from '../../audit-logs/store/AuditProvider';
 import { useAuth } from '../../auth/store/AuthProvider';
 import { PERMISSIONS } from '../../../shared/constants/permissions';
 import { RiskAlertDetailDrawer } from '../components/RiskAlertDetailDrawer';
@@ -17,6 +18,7 @@ import type { RiskAlertFilters as RiskAlertFiltersValue, RiskAlertRecord } from 
 const { Paragraph, Title } = Typography;
 
 export function RiskAlertsPage() {
+  const { addLog } = useAudit();
   const { currentUser } = useAuth();
   const [filters, setFilters] = useState<RiskAlertFiltersValue>({});
   const [alerts, setAlerts] = useState(mockRiskAlerts);
@@ -83,6 +85,27 @@ export function RiskAlertsPage() {
           if (!result.success) {
             return;
           }
+
+          const actionTypeMap = {
+            resolve: 'risk_resolve',
+            review: 'risk_review',
+            dismiss: 'risk_dismiss',
+          } as const;
+
+          addLog({
+            actorName: currentUser?.name ?? '风控同学',
+            actorRole: currentUser?.roleName ?? '风控人员',
+            module: 'risk',
+            actionType: actionTypeMap[values.action],
+            targetType: 'risk',
+            targetId: activeAlert.id,
+            targetLabel: activeAlert.orderId,
+            result: 'success',
+            summary: `${activeAlert.id} ${result.message.replace(`${activeAlert.id} `, '').replace('。', '')}`,
+            detail: values.note || `已对风险告警 ${activeAlert.id} 执行 ${values.action} 处理动作。`,
+            createdAt: new Date().toISOString(),
+            relatedPath: '/risk-alerts',
+          });
 
           setAlerts(result.alerts);
           closeDrawer();

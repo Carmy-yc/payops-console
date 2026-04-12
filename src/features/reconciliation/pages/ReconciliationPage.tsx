@@ -1,5 +1,6 @@
 import { message, Space, Typography } from 'antd';
 import { useMemo, useState } from 'react';
+import { useAudit } from '../../audit-logs/store/AuditProvider';
 import { useAuth } from '../../auth/store/AuthProvider';
 import { ReconciliationDiffTable } from '../components/ReconciliationDiffTable';
 import { ReconciliationFilters } from '../components/ReconciliationFilters';
@@ -21,6 +22,7 @@ const { Paragraph, Title } = Typography;
 const defaultBatchDate = mockReconciliationBatches[0]?.batchDate;
 
 export function ReconciliationPage() {
+  const { addLog } = useAudit();
   const { currentUser } = useAuth();
   const [filters, setFilters] = useState<ReconciliationFiltersValue>({
     batchDate: defaultBatchDate,
@@ -120,6 +122,27 @@ export function ReconciliationPage() {
           if (!result.success) {
             return;
           }
+
+          const actionTypeMap = {
+            resolve: 'reconciliation_resolve',
+            review: 'reconciliation_review',
+            ignore: 'reconciliation_ignore',
+          } as const;
+
+          addLog({
+            actorName: currentUser?.name ?? '财务同学',
+            actorRole: currentUser?.roleName ?? '财务人员',
+            module: 'reconciliation',
+            actionType: actionTypeMap[values.action],
+            targetType: 'reconciliation',
+            targetId: activeRecord.id,
+            targetLabel: activeRecord.orderId,
+            result: 'success',
+            summary: `${activeRecord.id} ${result.message.replace(`${activeRecord.id} `, '').replace('。', '')}`,
+            detail: values.note || `已对差异单 ${activeRecord.id} 执行 ${values.action} 处理动作。`,
+            createdAt: new Date().toISOString(),
+            relatedPath: '/reconciliation',
+          });
 
           setRecords(result.records);
           closeModal();

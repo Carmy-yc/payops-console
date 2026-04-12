@@ -1,5 +1,6 @@
 import type { PropsWithChildren } from 'react';
 import { createContext, useContext, useMemo, useState } from 'react';
+import { useAudit } from '../../audit-logs/store/AuditProvider';
 import { mockOrderEvents } from '../../transactions/data/mock-order-events';
 import { mockOrders } from '../../transactions/data/mock-orders';
 import { mockRefunds } from '../../transactions/data/mock-refunds';
@@ -105,6 +106,7 @@ function seedRefunds(): RefundRecord[] {
 }
 
 export function RefundsProvider({ children }: PropsWithChildren) {
+  const { addLog } = useAudit();
   const [refunds, setRefunds] = useState<RefundRecord[]>(() => seedRefunds());
   const [runtimeEvents, setRuntimeEvents] = useState<OrderEvent[]>([]);
 
@@ -157,6 +159,20 @@ export function RefundsProvider({ children }: PropsWithChildren) {
             'refund_created',
           ),
         ]);
+        addLog({
+          actorName: payload.createdBy,
+          actorRole: '运营人员',
+          module: 'refund',
+          actionType: 'refund_create',
+          targetType: 'refund',
+          targetId: refund.id,
+          targetLabel: refund.orderId,
+          result: 'success',
+          summary: `发起退款 ${refund.id}`,
+          detail: `${payload.createdBy} 为订单 ${refund.orderId} 发起退款 ${refund.id}，金额 ${refund.amount} 元。`,
+          createdAt: refund.createdAt,
+          relatedPath: '/refunds',
+        });
 
         return {
           success: true,
@@ -200,6 +216,20 @@ export function RefundsProvider({ children }: PropsWithChildren) {
             'refund_approved',
           ),
         ]);
+        addLog({
+          actorName: reviewedBy,
+          actorRole: '财务人员',
+          module: 'refund',
+          actionType: 'refund_approve',
+          targetType: 'refund',
+          targetId: targetRefund.id,
+          targetLabel: targetRefund.orderId,
+          result: 'success',
+          summary: `通过退款 ${targetRefund.id} 审核`,
+          detail: `${reviewedBy} 审核通过退款 ${targetRefund.id}，该退款进入处理中状态。`,
+          createdAt: reviewedAt,
+          relatedPath: '/refunds',
+        });
 
         return { success: true, message: '退款审核已通过。' };
       },
@@ -239,6 +269,20 @@ export function RefundsProvider({ children }: PropsWithChildren) {
             'refund_rejected',
           ),
         ]);
+        addLog({
+          actorName: reviewedBy,
+          actorRole: '财务人员',
+          module: 'refund',
+          actionType: 'refund_reject',
+          targetType: 'refund',
+          targetId: targetRefund.id,
+          targetLabel: targetRefund.orderId,
+          result: 'success',
+          summary: `驳回退款 ${targetRefund.id}`,
+          detail: `${reviewedBy} 驳回了退款 ${targetRefund.id}。`,
+          createdAt: reviewedAt,
+          relatedPath: '/refunds',
+        });
 
         return { success: true, message: '退款已驳回。' };
       },
@@ -273,11 +317,25 @@ export function RefundsProvider({ children }: PropsWithChildren) {
             'refund_success',
           ),
         ]);
+        addLog({
+          actorName: operator,
+          actorRole: '系统通道',
+          module: 'refund',
+          actionType: 'refund_success',
+          targetType: 'refund',
+          targetId: targetRefund.id,
+          targetLabel: targetRefund.orderId,
+          result: 'success',
+          summary: `退款 ${targetRefund.id} 已成功`,
+          detail: `${operator} 已将退款 ${targetRefund.id} 标记为成功。`,
+          createdAt: nowIsoString(),
+          relatedPath: '/refunds',
+        });
 
         return { success: true, message: '退款状态已更新为成功。' };
       },
     }),
-    [orderEvents, orders, refunds],
+    [addLog, orderEvents, orders, refunds],
   );
 
   return <RefundsContext.Provider value={value}>{children}</RefundsContext.Provider>;
@@ -292,4 +350,3 @@ export function useRefunds() {
 
   return context;
 }
-

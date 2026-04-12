@@ -1,5 +1,6 @@
 import type { PropsWithChildren } from 'react';
 import { createContext, useContext, useMemo, useState } from 'react';
+import { useAudit } from '../../audit-logs/store/AuditProvider';
 import { demoUsers } from '../data/demo-users';
 import type { CurrentUser, DemoUserRecord } from '../types';
 
@@ -30,6 +31,7 @@ function getStoredUser(): CurrentUser | null {
 }
 
 export function AuthProvider({ children }: PropsWithChildren) {
+  const { addLog } = useAudit();
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(() =>
     typeof window === 'undefined' ? null : getStoredUser(),
   );
@@ -54,25 +56,86 @@ export function AuthProvider({ children }: PropsWithChildren) {
       currentUser,
       isAuthenticated: Boolean(currentUser),
       login(account, password) {
+        const normalizedAccount = account.trim();
         const matchedUser = demoUsers.find(
-          (user) => user.account === account.trim() && user.password === password,
+          (user) => user.account === normalizedAccount && user.password === password,
         );
 
         if (!matchedUser) {
+          addLog({
+            actorName: normalizedAccount || '未知账号',
+            actorRole: '未认证用户',
+            module: 'auth',
+            actionType: 'login',
+            targetType: 'session',
+            targetId: normalizedAccount || '--',
+            targetLabel: '登录会话',
+            result: 'failed',
+            summary: `账号 ${normalizedAccount || '未知账号'} 登录失败`,
+            detail: '输入的账号或密码错误，系统拒绝本次登录。',
+            createdAt: new Date().toISOString(),
+            relatedPath: '/login',
+          });
           return false;
         }
 
-        persistUser(toCurrentUser(matchedUser));
+        const safeUser = toCurrentUser(matchedUser);
+        persistUser(safeUser);
+        addLog({
+          actorName: safeUser.name,
+          actorRole: safeUser.roleName,
+          module: 'auth',
+          actionType: 'login',
+          targetType: 'session',
+          targetId: safeUser.account,
+          targetLabel: '登录会话',
+          result: 'success',
+          summary: `${safeUser.name} 登录系统`,
+          detail: `${safeUser.roleName} ${safeUser.name} 已成功登录系统。`,
+          createdAt: new Date().toISOString(),
+          relatedPath: '/dashboard',
+        });
         return true;
       },
       loginWithDemoUser(user) {
-        persistUser(toCurrentUser(user));
+        const safeUser = toCurrentUser(user);
+        persistUser(safeUser);
+        addLog({
+          actorName: safeUser.name,
+          actorRole: safeUser.roleName,
+          module: 'auth',
+          actionType: 'login',
+          targetType: 'session',
+          targetId: safeUser.account,
+          targetLabel: '演示账号快速登录',
+          result: 'success',
+          summary: `${safeUser.name} 使用演示账号登录`,
+          detail: `${safeUser.roleName} ${safeUser.name} 通过演示账号快速进入系统。`,
+          createdAt: new Date().toISOString(),
+          relatedPath: '/dashboard',
+        });
       },
       logout() {
+        if (currentUser) {
+          addLog({
+            actorName: currentUser.name,
+            actorRole: currentUser.roleName,
+            module: 'auth',
+            actionType: 'logout',
+            targetType: 'session',
+            targetId: currentUser.account,
+            targetLabel: '登录会话',
+            result: 'success',
+            summary: `${currentUser.name} 退出登录`,
+            detail: `${currentUser.roleName} ${currentUser.name} 主动退出当前系统会话。`,
+            createdAt: new Date().toISOString(),
+            relatedPath: '/login',
+          });
+        }
         persistUser(null);
       },
     }),
-    [currentUser],
+    [addLog, currentUser],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -87,4 +150,3 @@ export function useAuth() {
 
   return context;
 }
-
