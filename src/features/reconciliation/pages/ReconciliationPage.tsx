@@ -1,6 +1,5 @@
 import { Space, Typography } from 'antd';
 import { useMemo, useState } from 'react';
-import { useAudit } from '../../audit-logs/store/AuditProvider';
 import { useAuth } from '../../auth/store/AuthProvider';
 import { usePageMessage } from '../../../shared/hooks/usePageMessage';
 import { ReconciliationDiffTable } from '../components/ReconciliationDiffTable';
@@ -8,35 +7,29 @@ import { ReconciliationFilters } from '../components/ReconciliationFilters';
 import { ReconciliationHandleModal } from '../components/ReconciliationHandleModal';
 import { ReconciliationSummary } from '../components/ReconciliationSummary';
 import {
-  mockReconciliationBatches,
-  mockReconciliationRecords,
-} from '../data/mock-reconciliation-records';
-import {
   filterReconciliationRecords,
-  handleReconciliationAction,
   summarizeReconciliation,
 } from '../lib/reconciliation-utils';
+import { useReconciliation } from '../store/ReconciliationProvider';
 import type { ReconciliationFilters as ReconciliationFiltersValue, ReconciliationRecord } from '../types';
 
 const { Paragraph, Title } = Typography;
 
-const defaultBatchDate = mockReconciliationBatches[0]?.batchDate;
-
 export function ReconciliationPage() {
-  const { addLog } = useAudit();
   const { currentUser } = useAuth();
-  const [filters, setFilters] = useState<ReconciliationFiltersValue>({
+  const { batches, records, handleRecordAction } = useReconciliation();
+  const defaultBatchDate = batches[0]?.batchDate;
+  const [filters, setFilters] = useState<ReconciliationFiltersValue>(() => ({
     batchDate: defaultBatchDate,
-  });
-  const [records, setRecords] = useState(mockReconciliationRecords);
+  }));
   const [activeRecord, setActiveRecord] = useState<ReconciliationRecord>();
   const [modalOpen, setModalOpen] = useState(false);
   const { contextHolder, showResult } = usePageMessage();
 
   const selectedBatchDate = filters.batchDate ?? defaultBatchDate;
   const activeBatch =
-    mockReconciliationBatches.find((batch) => batch.batchDate === selectedBatchDate) ??
-    mockReconciliationBatches[0];
+    batches.find((batch) => batch.batchDate === selectedBatchDate) ??
+    batches[0];
 
   const batchRecords = useMemo(
     () => filterReconciliationRecords(records, { batchDate: activeBatch.batchDate }),
@@ -55,11 +48,11 @@ export function ReconciliationPage() {
 
   const batchOptions = useMemo(
     () =>
-      mockReconciliationBatches.map((batch) => ({
+      batches.map((batch) => ({
         label: batch.batchDate,
         value: batch.batchDate,
       })),
-    [],
+    [batches],
   );
 
   function closeModal() {
@@ -110,11 +103,12 @@ export function ReconciliationPage() {
             return;
           }
 
-          const result = handleReconciliationAction(records, {
+          const result = handleRecordAction({
             recordId: activeRecord.id,
             action: values.action,
             note: values.note,
             operator: currentUser?.name ?? '财务同学',
+            actorRole: currentUser?.roleName ?? '财务人员',
             updatedAt: new Date().toISOString(),
           });
 
@@ -123,29 +117,6 @@ export function ReconciliationPage() {
           if (!result.success) {
             return;
           }
-
-          const actionTypeMap = {
-            resolve: 'reconciliation_resolve',
-            review: 'reconciliation_review',
-            ignore: 'reconciliation_ignore',
-          } as const;
-
-          addLog({
-            actorName: currentUser?.name ?? '财务同学',
-            actorRole: currentUser?.roleName ?? '财务人员',
-            module: 'reconciliation',
-            actionType: actionTypeMap[values.action],
-            targetType: 'reconciliation',
-            targetId: activeRecord.id,
-            targetLabel: activeRecord.orderId,
-            result: 'success',
-            summary: `${activeRecord.id} ${result.message.replace(`${activeRecord.id} `, '').replace('。', '')}`,
-            detail: values.note || `已对差异单 ${activeRecord.id} 执行 ${values.action} 处理动作。`,
-            createdAt: new Date().toISOString(),
-            relatedPath: '/reconciliation',
-          });
-
-          setRecords(result.records);
           closeModal();
         }}
       />

@@ -1,4 +1,5 @@
 import { message } from 'antd';
+import { useEffect, useState } from 'react';
 
 type PageMessageType = 'success' | 'error';
 
@@ -9,9 +10,22 @@ type PageMessageResult = {
 
 export function usePageMessage() {
   const [messageApi, contextHolder] = message.useMessage();
+  const [pendingMessage, setPendingMessage] = useState<{
+    type: PageMessageType;
+    content: string;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!pendingMessage) {
+      return;
+    }
+
+    messageApi.open(pendingMessage);
+    setPendingMessage(null);
+  }, [messageApi, pendingMessage]);
 
   function show(type: PageMessageType, content: string) {
-    messageApi.open({
+    setPendingMessage({
       type,
       content,
     });

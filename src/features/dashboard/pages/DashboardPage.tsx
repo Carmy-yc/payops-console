@@ -15,9 +15,9 @@ import {
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/store/AuthProvider';
-import { mockReconciliationRecords } from '../../reconciliation/data/mock-reconciliation-records';
-import { mockRiskAlerts } from '../../risk-alerts/data/mock-risk-alerts';
+import { useReconciliation } from '../../reconciliation/store/ReconciliationProvider';
 import { useRefunds } from '../../refunds/store/RefundsProvider';
+import { useRiskAlerts } from '../../risk-alerts/store/RiskAlertsProvider';
 import { formatDateTime } from '../../transactions/lib/transaction-utils';
 import { NAV_ITEMS } from '../../../shared/constants/routes';
 import { DashboardChannelChart } from '../components/DashboardChannelChart';
@@ -46,20 +46,22 @@ export function DashboardPage() {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const { orders, refunds } = useRefunds();
+  const { records: reconciliationRecords } = useReconciliation();
+  const { alerts: riskAlerts } = useRiskAlerts();
 
   const metrics = useMemo(
-    () => buildDashboardMetrics(orders, refunds, mockReconciliationRecords, mockRiskAlerts),
-    [orders, refunds],
+    () => buildDashboardMetrics(orders, refunds, reconciliationRecords, riskAlerts),
+    [orders, refunds, reconciliationRecords, riskAlerts],
   );
 
   const todoItems = useMemo(
-    () => buildDashboardTodoItems(refunds, mockReconciliationRecords, mockRiskAlerts),
-    [refunds],
+    () => buildDashboardTodoItems(refunds, reconciliationRecords, riskAlerts),
+    [refunds, reconciliationRecords, riskAlerts],
   );
 
   const recentExceptions = useMemo(
-    () => buildDashboardExceptions(refunds, mockReconciliationRecords, mockRiskAlerts),
-    [refunds],
+    () => buildDashboardExceptions(refunds, reconciliationRecords, riskAlerts),
+    [refunds, reconciliationRecords, riskAlerts],
   );
 
   const trendSeries = useMemo(
@@ -127,7 +129,7 @@ export function DashboardPage() {
         type="info"
         showIcon
         message={`当前看板基于模拟业务日 ${metrics.referenceDate || '2026-04-12'} 汇总展示`}
-        description="交易与退款指标会随着运行时操作刷新；风控与对账仍以当前 mock 数据作为演示基线。"
+        description="交易、退款、对账与风控指标会随着当前演示操作同步刷新。"
       />
 
       <div>
