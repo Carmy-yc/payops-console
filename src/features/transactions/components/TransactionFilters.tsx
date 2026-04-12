@@ -1,5 +1,6 @@
-import { Button, Card, Col, Form, Input, InputNumber, Row, Select, Space, Typography } from 'antd';
+import { Button, Col, Form, Input, InputNumber, Row, Select, Space, Typography } from 'antd';
 import { useState } from 'react';
+import { FilterPanel, FilterPanelActions } from '../../../shared/ui/FilterPanel';
 import type { TransactionFilters as TransactionFiltersValue } from '../types';
 
 const { Text } = Typography;
@@ -57,99 +58,95 @@ export function TransactionFilters({
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <Card className="transaction-filters">
-      <Space direction="vertical" size={16} className="full-width">
-        <Space className="transaction-filters__meta">
-          <Text strong>筛选条件</Text>
-          <Text type="secondary">
-            当前命中 {filteredCount} / {totalCount} 条订单
-          </Text>
-        </Space>
+    <FilterPanel
+      className="transaction-filters"
+      extra={
+        <Text type="secondary">
+          当前命中 {filteredCount} / {totalCount} 条订单
+        </Text>
+      }
+    >
+      <Form<TransactionFiltersValue>
+        form={form}
+        layout="vertical"
+        onFinish={(values) => onSearch(normalizeFilters(values))}
+      >
+        <Row gutter={16}>
+          <Col span={7}>
+            <Form.Item label="关键字" name="keyword">
+              <Input placeholder="支持订单号 / 商户名称 / 交易标题" />
+            </Form.Item>
+          </Col>
+          <Col span={4}>
+            <Form.Item label="订单状态" name="status">
+              <Select allowClear placeholder="全部状态" options={statusOptions} />
+            </Form.Item>
+          </Col>
+          <Col span={4}>
+            <Form.Item label="支付渠道" name="payChannel">
+              <Select allowClear placeholder="全部渠道" options={channelOptions} />
+            </Form.Item>
+          </Col>
+          <Col span={4}>
+            <Form.Item label="风险等级" name="riskLevel">
+              <Select allowClear placeholder="全部风险" options={riskLevelOptions} />
+            </Form.Item>
+          </Col>
+          <FilterPanelActions span={5}>
+            <Space wrap>
+              <Button type="primary" htmlType="submit">
+                查询
+              </Button>
+              <Button
+                onClick={() => {
+                  form.resetFields();
+                  onReset();
+                }}
+              >
+                重置
+              </Button>
+              <Button type="link" onClick={() => setExpanded((value) => !value)}>
+                {expanded ? '收起' : '展开'}
+              </Button>
+            </Space>
+          </FilterPanelActions>
+        </Row>
 
-        <Form<TransactionFiltersValue>
-          form={form}
-          layout="vertical"
-          onFinish={(values) => onSearch(normalizeFilters(values))}
-        >
+        {expanded ? (
           <Row gutter={16}>
-            <Col span={7}>
-              <Form.Item label="关键字" name="keyword">
-                <Input placeholder="支持订单号 / 商户名称 / 交易标题" />
+            <Col span={4}>
+              <Form.Item label="最小金额" name="amountMin">
+                <InputNumber<number>
+                  min={0}
+                  precision={2}
+                  placeholder="0"
+                  className="full-width"
+                />
               </Form.Item>
             </Col>
             <Col span={4}>
-              <Form.Item label="订单状态" name="status">
-                <Select allowClear placeholder="全部状态" options={statusOptions} />
+              <Form.Item label="最大金额" name="amountMax">
+                <InputNumber<number>
+                  min={0}
+                  precision={2}
+                  placeholder="不限"
+                  className="full-width"
+                />
               </Form.Item>
             </Col>
             <Col span={4}>
-              <Form.Item label="支付渠道" name="payChannel">
-                <Select allowClear placeholder="全部渠道" options={channelOptions} />
+              <Form.Item label="开始日期" name="createdFrom">
+                <Input type="date" />
               </Form.Item>
             </Col>
             <Col span={4}>
-              <Form.Item label="风险等级" name="riskLevel">
-                <Select allowClear placeholder="全部风险" options={riskLevelOptions} />
-              </Form.Item>
-            </Col>
-            <Col span={5} className="transaction-filters__actions">
-              <Form.Item label=" " className="transaction-filters__action-item">
-                <Space wrap>
-                  <Button type="primary" htmlType="submit">
-                    查询
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      form.resetFields();
-                      onReset();
-                    }}
-                  >
-                    重置
-                  </Button>
-                  <Button type="link" onClick={() => setExpanded((value) => !value)}>
-                    {expanded ? '收起' : '展开'}
-                  </Button>
-                </Space>
+              <Form.Item label="结束日期" name="createdTo">
+                <Input type="date" />
               </Form.Item>
             </Col>
           </Row>
-
-          {expanded ? (
-            <Row gutter={16}>
-              <Col span={4}>
-                <Form.Item label="最小金额" name="amountMin">
-                  <InputNumber<number>
-                    min={0}
-                    precision={2}
-                    placeholder="0"
-                    className="full-width"
-                  />
-                </Form.Item>
-              </Col>
-              <Col span={4}>
-                <Form.Item label="最大金额" name="amountMax">
-                  <InputNumber<number>
-                    min={0}
-                    precision={2}
-                    placeholder="不限"
-                    className="full-width"
-                  />
-                </Form.Item>
-              </Col>
-              <Col span={4}>
-                <Form.Item label="开始日期" name="createdFrom">
-                  <Input type="date" />
-                </Form.Item>
-              </Col>
-              <Col span={4}>
-                <Form.Item label="结束日期" name="createdTo">
-                  <Input type="date" />
-                </Form.Item>
-              </Col>
-            </Row>
-          ) : null}
-        </Form>
-      </Space>
-    </Card>
+        ) : null}
+      </Form>
+    </FilterPanel>
   );
 }

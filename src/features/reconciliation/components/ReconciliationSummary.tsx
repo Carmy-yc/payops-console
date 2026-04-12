@@ -1,4 +1,4 @@
-import { Card, Col, Row, Statistic } from 'antd';
+import { StatsRow } from '../../../shared/ui/StatsRow';
 import type { ReconciliationSummary as ReconciliationSummaryValue } from '../types';
 
 type ReconciliationSummaryProps = {
@@ -15,25 +15,5 @@ export function ReconciliationSummary({ summary }: ReconciliationSummaryProps) {
     { title: '差异总金额', value: summary.diffAmount, prefix: '¥', precision: 2 },
   ];
 
-  return (
-    <Row gutter={[16, 16]}>
-      {stats.map((item) => {
-        const isNumeric = typeof item.value === 'number';
-
-        return (
-          <Col key={item.title} xs={24} md={12} xl={8}>
-            <Card>
-              <Statistic
-                title={item.title}
-                value={item.value}
-                suffix={item.suffix}
-                prefix={item.prefix}
-                precision={isNumeric ? item.precision ?? 0 : undefined}
-              />
-            </Card>
-          </Col>
-        );
-      })}
-    </Row>
-  );
+  return <StatsRow items={stats} xl={8} />;
 }

@@ -334,94 +334,52 @@ body {
   margin-bottom: 0 !important;
 }
 
-.transaction-filters__meta {
+.filter-panel__header {
   display: flex;
   justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px 16px;
+  flex-wrap: wrap;
   width: 100%;
 }
 
-.transaction-filters__actions {
+.filter-panel__extra {
+  display: flex;
+  align-items: center;
+}
+
+.filter-panel__actions {
   display: flex;
   align-items: flex-end;
+}
+
+.filter-panel__actions--start {
+  justify-content: flex-start;
+}
+
+.filter-panel__actions--end {
   justify-content: flex-end;
 }
 
-.transaction-filters__action-item {
+.filter-panel__action-item {
   width: 100%;
   margin-bottom: 24px !important;
 }
 
-.transaction-filters__action-item .ant-form-item-control-input-content {
+.filter-panel__action-item .ant-form-item-control-input-content {
   display: flex;
-  justify-content: flex-end;
 }
 
-.refunds-filters__actions {
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-end;
+.filter-panel__action-item--start .ant-form-item-control-input-content {
+  justify-content: flex-start;
 }
 
-.refunds-filters__action-item {
-  width: 100%;
-  margin-bottom: 24px !important;
-}
-
-.refunds-filters__action-item .ant-form-item-control-input-content {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.reconciliation-filters__actions {
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-end;
-}
-
-.reconciliation-filters__action-item {
-  width: 100%;
-  margin-bottom: 24px !important;
-}
-
-.reconciliation-filters__action-item .ant-form-item-control-input-content {
-  display: flex;
+.filter-panel__action-item--end .ant-form-item-control-input-content {
   justify-content: flex-end;
 }
 
 .reconciliation-handle__summary {
   margin-bottom: 16px;
-}
-
-.risk-alert-filters__actions {
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-end;
-}
-
-.risk-alert-filters__action-item {
-  width: 100%;
-  margin-bottom: 24px !important;
-}
-
-.risk-alert-filters__action-item .ant-form-item-control-input-content {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.audit-log-filters__actions {
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-start;
-}
-
-.audit-log-filters__action-item {
-  width: 100%;
-  margin-bottom: 24px !important;
-}
-
-.audit-log-filters__action-item .ant-form-item-control-input-content {
-  display: flex;
-  justify-content: flex-start;
 }
 
 .refund-modal__tip {

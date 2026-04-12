@@ -1,4 +1,4 @@
-import { Card, Col, Row, Statistic } from 'antd';
+import { StatsRow } from '../../../shared/ui/StatsRow';
 import type { AuditLogSummary } from '../types';
 
 type AuditLogStatsProps = {
@@ -13,15 +13,5 @@ export function AuditLogStats({ summary }: AuditLogStatsProps) {
     { title: '覆盖模块', value: summary.moduleCount, suffix: '个' },
   ];
 
-  return (
-    <Row gutter={[16, 16]}>
-      {stats.map((item) => (
-        <Col key={item.title} xs={24} md={12} xl={6}>
-          <Card>
-            <Statistic title={item.title} value={item.value} suffix={item.suffix} />
-          </Card>
-        </Col>
-      ))}
-    </Row>
-  );
+  return <StatsRow items={stats} />;
 }

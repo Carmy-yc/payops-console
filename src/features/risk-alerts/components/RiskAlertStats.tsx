@@ -1,4 +1,4 @@
-import { Card, Col, Row, Statistic } from 'antd';
+import { StatsRow } from '../../../shared/ui/StatsRow';
 import type { RiskAlertSummary } from '../types';
 
 type RiskAlertStatsProps = {
@@ -13,15 +13,5 @@ export function RiskAlertStats({ summary }: RiskAlertStatsProps) {
     { title: '已处理告警', value: summary.handledCount, suffix: '条' },
   ];
 
-  return (
-    <Row gutter={[16, 16]}>
-      {stats.map((item) => (
-        <Col key={item.title} xs={24} md={12} xl={6}>
-          <Card>
-            <Statistic title={item.title} value={item.value} suffix={item.suffix} />
-          </Card>
-        </Col>
-      ))}
-    </Row>
-  );
+  return <StatsRow items={stats} />;
 }

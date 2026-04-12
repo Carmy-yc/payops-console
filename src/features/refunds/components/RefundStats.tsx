@@ -1,4 +1,4 @@
-import { Card, Col, Row, Statistic } from 'antd';
+import { StatsRow } from '../../../shared/ui/StatsRow';
 import type { RefundRecord } from '../../transactions/types';
 
 type RefundStatsProps = {
@@ -12,22 +12,11 @@ export function RefundStats({ refunds }: RefundStatsProps) {
   const successCount = refunds.filter((refund) => refund.status === 'success').length;
 
   const stats = [
-    { title: '退款总金额', value: totalAmount, prefix: '¥' },
+    { title: '退款总金额', value: totalAmount, prefix: '¥', precision: 2 },
     { title: '待审核退款', value: pendingReviews, suffix: '笔' },
     { title: '处理中退款', value: processingCount, suffix: '笔' },
     { title: '退款成功', value: successCount, suffix: '笔' },
   ];
 
-  return (
-    <Row gutter={[16, 16]}>
-      {stats.map((item) => (
-        <Col key={item.title} xs={24} md={12} xl={6}>
-          <Card>
-            <Statistic {...item} precision={item.title === '退款总金额' ? 2 : 0} />
-          </Card>
-        </Col>
-      ))}
-    </Row>
-  );
+  return <StatsRow items={stats} />;
 }
-
