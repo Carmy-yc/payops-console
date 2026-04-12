@@ -1,0 +1,78 @@
+import { fireEvent, render, screen, within } from '@testing-library/react';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { demoUsers } from '../../features/auth/data/demo-users';
+import { AppProviders } from '../providers/AppProviders';
+import { LoginPage } from '../../features/auth/pages/LoginPage';
+import { HomeRedirect } from './index';
+
+function storeDemoUser(account: string) {
+  const matchedUser = demoUsers.find((user) => user.account === account);
+
+  if (!matchedUser) {
+    throw new Error(`Unknown demo user: ${account}`);
+  }
+
+  const { password: _password, ...safeUser } = matchedUser;
+  window.localStorage.setItem('payops-console.auth.current-user', JSON.stringify(safeUser));
+}
+
+describe('首页默认跳转', () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+  });
+
+  it('未登录访问首页时会进入登录页', async () => {
+    render(
+      <AppProviders>
+        <MemoryRouter initialEntries={['/']}>
+          <Routes>
+            <Route path="/" element={<HomeRedirect />} />
+            <Route path="/login" element={<div>登录页</div>} />
+          </Routes>
+        </MemoryRouter>
+      </AppProviders>,
+    );
+
+    expect(await screen.findByText('登录页')).toBeInTheDocument();
+  });
+
+  it('审计账号访问首页时会跳到审计日志页', async () => {
+    storeDemoUser('auditor');
+
+    render(
+      <AppProviders>
+        <MemoryRouter initialEntries={['/']}>
+          <Routes>
+            <Route path="/" element={<HomeRedirect />} />
+            <Route path="/audit-logs" element={<div>审计日志页</div>} />
+          </Routes>
+        </MemoryRouter>
+      </AppProviders>,
+    );
+
+    expect(await screen.findByText('审计日志页')).toBeInTheDocument();
+  });
+
+  it('审计账号从登录页快速进入时会落到审计日志页', async () => {
+    render(
+      <AppProviders>
+        <MemoryRouter initialEntries={['/login']}>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/audit-logs" element={<div>审计日志页</div>} />
+          </Routes>
+        </MemoryRouter>
+      </AppProviders>,
+    );
+
+    const auditorCard = screen.getByText('审计人员').closest('.ant-card');
+
+    if (!(auditorCard instanceof HTMLElement)) {
+      throw new Error('未找到审计账号卡片');
+    }
+
+    fireEvent.click(within(auditorCard).getByRole('button', { name: '快速进入' }));
+
+    expect(await screen.findByText('审计日志页')).toBeInTheDocument();
+  });
+});

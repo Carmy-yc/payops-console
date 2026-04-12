@@ -6,6 +6,7 @@ import {
 } from 'react-router-dom';
 import { AuditLogsPage } from '../../features/audit-logs/pages/AuditLogsPage';
 import { LoginPage } from '../../features/auth/pages/LoginPage';
+import { useAuth } from '../../features/auth/store/AuthProvider';
 import { DashboardPage } from '../../features/dashboard/pages/DashboardPage';
 import { ReconciliationPage } from '../../features/reconciliation/pages/ReconciliationPage';
 import { RefundsPage } from '../../features/refunds/pages/RefundsPage';
@@ -13,14 +14,25 @@ import { RiskAlertsPage } from '../../features/risk-alerts/pages/RiskAlertsPage'
 import { OrderDetailPage } from '../../features/transactions/pages/OrderDetailPage';
 import { TransactionsPage } from '../../features/transactions/pages/TransactionsPage';
 import { PERMISSIONS } from '../../shared/constants/permissions';
+import { getDefaultRoute } from '../../shared/constants/routes';
 import { CenteredResult } from '../../shared/ui/CenteredResult';
 import { AppShell } from '../layouts/AppShell';
 import { RequireAuth, RequirePermission } from './guards';
 
+export function HomeRedirect() {
+  const { currentUser, isAuthenticated } = useAuth();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <Navigate to={getDefaultRoute(currentUser?.permissions)} replace />;
+}
+
 const routes: RouteObject[] = [
   {
     path: '/',
-    element: <Navigate to="/dashboard" replace />,
+    element: <HomeRedirect />,
   },
   {
     path: '/login',
@@ -106,4 +118,3 @@ const router = createBrowserRouter(routes);
 export function AppRouter() {
   return <RouterProvider router={router} />;
 }
-

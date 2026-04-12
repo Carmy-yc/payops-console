@@ -1,5 +1,6 @@
 import type { PropsWithChildren } from 'react';
 import { createContext, useContext, useMemo, useState } from 'react';
+import { getDefaultRoute } from '../../../shared/constants/routes';
 import { useAudit } from '../../audit-logs/store/AuditProvider';
 import { demoUsers } from '../data/demo-users';
 import type { CurrentUser, DemoUserRecord } from '../types';
@@ -93,7 +94,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
           summary: `${safeUser.name} 登录系统`,
           detail: `${safeUser.roleName} ${safeUser.name} 已成功登录系统。`,
           createdAt: new Date().toISOString(),
-          relatedPath: '/dashboard',
+          relatedPath: getDefaultRoute(safeUser.permissions),
         });
         return true;
       },
@@ -112,7 +113,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
           summary: `${safeUser.name} 使用演示账号登录`,
           detail: `${safeUser.roleName} ${safeUser.name} 通过演示账号快速进入系统。`,
           createdAt: new Date().toISOString(),
-          relatedPath: '/dashboard',
+          relatedPath: getDefaultRoute(safeUser.permissions),
         });
       },
       logout() {

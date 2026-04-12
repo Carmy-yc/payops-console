@@ -49,7 +49,7 @@ export function CreateRefundModal({
       cancelText="取消"
       onCancel={onCancel}
       onOk={() => form.submit()}
-      destroyOnClose
+      destroyOnHidden
     >
       <Space direction="vertical" size={16} className="full-width">
         <Alert
@@ -93,4 +93,3 @@ export function CreateRefundModal({
     </Modal>
   );
 }
-

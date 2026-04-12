@@ -1,6 +1,7 @@
 import { Alert, Button, Card, Divider, Form, Input, Space, Typography } from 'antd';
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { getDefaultRoute } from '../../../shared/constants/routes';
 import { demoUsers } from '../data/demo-users';
 import { useAuth } from '../store/AuthProvider';
 
@@ -19,11 +20,12 @@ export function LoginPage() {
 
   const redirectTo = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname;
 
-  const handleSuccess = () => {
-    navigate(redirectTo ?? '/dashboard', { replace: true });
+  const handleSuccess = (defaultPath: string) => {
+    navigate(redirectTo ?? defaultPath, { replace: true });
   };
 
   const handleFinish = (values: LoginFormValues) => {
+    const matchedUser = demoUsers.find((user) => user.account === values.account.trim());
     const succeeded = login(values.account, values.password);
 
     if (!succeeded) {
@@ -32,18 +34,18 @@ export function LoginPage() {
     }
 
     setErrorMessage('');
-    handleSuccess();
+    handleSuccess(getDefaultRoute(matchedUser?.permissions));
   };
 
   return (
     <div className="login-page">
-      <Card className="login-page__card" bordered={false}>
+      <Card className="login-page__card">
         <Space direction="vertical" size={20} className="full-width">
           <div>
             <Text type="secondary">PayOps Console</Text>
             <Title level={2}>商户支付运营后台</Title>
             <Paragraph type="secondary">
-              当前已完成项目初始化、登录入口、RBAC 骨架和模块占位页，后续可以继续接交易、退款和对账流程。
+              当前已完成登录鉴权、交易、退款、对账、风控和审计模块，可直接使用演示账号体验完整后台链路。
             </Paragraph>
           </div>
 
@@ -82,7 +84,7 @@ export function LoginPage() {
                   <Button
                     onClick={() => {
                       loginWithDemoUser(user);
-                      handleSuccess();
+                      handleSuccess(getDefaultRoute(user.permissions));
                     }}
                   >
                     快速进入

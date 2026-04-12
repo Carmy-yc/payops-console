@@ -1,5 +1,7 @@
 import { Button, Result } from 'antd';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../features/auth/store/AuthProvider';
+import { getDefaultRoute } from '../constants/routes';
 
 type CenteredResultProps = {
   status: '403' | '404';
@@ -9,6 +11,7 @@ type CenteredResultProps = {
 
 export function CenteredResult({ status, title, subtitle }: CenteredResultProps) {
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
 
   return (
     <div className="centered-result">
@@ -17,12 +20,11 @@ export function CenteredResult({ status, title, subtitle }: CenteredResultProps)
         title={title}
         subTitle={subtitle}
         extra={
-          <Button type="primary" onClick={() => navigate('/dashboard')}>
-            返回看板
+          <Button type="primary" onClick={() => navigate(getDefaultRoute(currentUser?.permissions))}>
+            返回首页
           </Button>
         }
       />
     </div>
   );
 }
-

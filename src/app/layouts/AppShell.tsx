@@ -47,9 +47,9 @@ export function AppShell() {
         <Header className="app-shell__header">
           <div className="app-shell__header-copy">
             <Title level={5} className="app-shell__header-title">
-              支付业务演示骨架
+              支付运营演示后台
             </Title>
-            <Text type="secondary">当前阶段已完成项目初始化、路由与权限骨架</Text>
+            <Text type="secondary">当前已完成交易、退款、对账、风控与审计闭环演示</Text>
           </div>
 
           <Space size="small">

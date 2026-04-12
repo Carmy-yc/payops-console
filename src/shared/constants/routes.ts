@@ -1,7 +1,7 @@
 import type { PermissionKey } from './permissions';
 import { PERMISSIONS } from './permissions';
 
-type NavItem = {
+export type NavItem = {
   key: string;
   label: string;
   path: string;
@@ -46,3 +46,15 @@ export const NAV_ITEMS: NavItem[] = [
     permission: PERMISSIONS.auditView,
   },
 ];
+
+export function getDefaultRoute(permissions?: PermissionKey[]) {
+  if (!permissions?.length) {
+    return '/login';
+  }
+
+  const matchedItem = NAV_ITEMS.find((item) =>
+    item.permission ? permissions.includes(item.permission) : true,
+  );
+
+  return matchedItem?.path ?? '/403';
+}
