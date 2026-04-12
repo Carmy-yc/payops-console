@@ -158,6 +158,22 @@ body {
   margin-bottom: 16px;
 }
 
+.risk-alert-filters__actions {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+}
+
+.risk-alert-filters__action-item {
+  width: 100%;
+  margin-bottom: 24px !important;
+}
+
+.risk-alert-filters__action-item .ant-form-item-control-input-content {
+  display: flex;
+  justify-content: flex-end;
+}
+
 .refund-modal__tip {
   margin-bottom: 0 !important;
 }
