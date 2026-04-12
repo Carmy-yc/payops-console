@@ -138,6 +138,26 @@ body {
   justify-content: flex-end;
 }
 
+.reconciliation-filters__actions {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+}
+
+.reconciliation-filters__action-item {
+  width: 100%;
+  margin-bottom: 24px !important;
+}
+
+.reconciliation-filters__action-item .ant-form-item-control-input-content {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.reconciliation-handle__summary {
+  margin-bottom: 16px;
+}
+
 .refund-modal__tip {
   margin-bottom: 0 !important;
 }

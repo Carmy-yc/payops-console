@@ -29,7 +29,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
   {
     key: 'reconciliation',
-    label: '对账页',
+    label: '对账中心',
     path: '/reconciliation',
     permission: PERMISSIONS.reconciliationView,
   },
@@ -46,4 +46,3 @@ export const NAV_ITEMS: NavItem[] = [
     permission: PERMISSIONS.auditView,
   },
 ];
-
