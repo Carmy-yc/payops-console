@@ -1,8 +1,9 @@
-import { message, Space, Typography } from 'antd';
-import { useEffect, useMemo, useState } from 'react';
+import { Space, Typography } from 'antd';
+import { useMemo, useState } from 'react';
 import { useAudit } from '../../audit-logs/store/AuditProvider';
 import { useAuth } from '../../auth/store/AuthProvider';
 import { PERMISSIONS } from '../../../shared/constants/permissions';
+import { usePageMessage } from '../../../shared/hooks/usePageMessage';
 import { RiskAlertDetailDrawer } from '../components/RiskAlertDetailDrawer';
 import { RiskAlertFilters } from '../components/RiskAlertFilters';
 import { RiskAlertStats } from '../components/RiskAlertStats';
@@ -16,10 +17,6 @@ import {
 import type { RiskAlertFilters as RiskAlertFiltersValue, RiskAlertRecord } from '../types';
 
 const { Paragraph, Title } = Typography;
-type FeedbackMessage = {
-  type: 'success' | 'error';
-  content: string;
-};
 
 export function RiskAlertsPage() {
   const { addLog } = useAudit();
@@ -28,8 +25,7 @@ export function RiskAlertsPage() {
   const [alerts, setAlerts] = useState(mockRiskAlerts);
   const [activeAlert, setActiveAlert] = useState<RiskAlertRecord>();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [messageApi, contextHolder] = message.useMessage();
-  const [feedbackMessage, setFeedbackMessage] = useState<FeedbackMessage | null>(null);
+  const { contextHolder, showResult } = usePageMessage();
 
   const canHandle = Boolean(currentUser?.permissions.includes(PERMISSIONS.riskHandle));
 
@@ -39,20 +35,6 @@ export function RiskAlertsPage() {
   );
 
   const summary = useMemo(() => summarizeRiskAlerts(alerts), [alerts]);
-
-  useEffect(() => {
-    if (!feedbackMessage) {
-      return;
-    }
-
-    if (feedbackMessage.type === 'success') {
-      messageApi.success(feedbackMessage.content);
-    } else {
-      messageApi.error(feedbackMessage.content);
-    }
-
-    setFeedbackMessage(null);
-  }, [feedbackMessage, messageApi]);
 
   function closeDrawer() {
     setDrawerOpen(false);
@@ -99,10 +81,7 @@ export function RiskAlertsPage() {
             updatedAt: new Date().toISOString(),
           });
 
-          setFeedbackMessage({
-            type: result.success ? 'success' : 'error',
-            content: result.message,
-          });
+          showResult(result);
 
           if (!result.success) {
             return;

@@ -1,4 +1,4 @@
-import { Button, Col, Row, Space, Typography, message } from 'antd';
+import { Button, Col, Row, Space, Typography } from 'antd';
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
@@ -6,6 +6,7 @@ import { useAuth } from '../../auth/store/AuthProvider';
 import { CreateRefundModal } from '../../refunds/components/CreateRefundModal';
 import { useRefunds } from '../../refunds/store/RefundsProvider';
 import { PERMISSIONS } from '../../../shared/constants/permissions';
+import { usePageMessage } from '../../../shared/hooks/usePageMessage';
 import {
   OrderDetailEmpty,
   OrderSummaryCard,
@@ -22,7 +23,7 @@ export function OrderDetailPage() {
   const [refundModalOpen, setRefundModalOpen] = useState(false);
   const { currentUser } = useAuth();
   const { orders, refunds, orderEvents, createRefund, refundReviewThreshold } = useRefunds();
-  const [messageApi, contextHolder] = message.useMessage();
+  const { contextHolder, showResult } = usePageMessage();
 
   const order = findOrderById(orders, orderId);
 
@@ -88,12 +89,12 @@ export function OrderDetailPage() {
             createdBy: currentUser?.name ?? '运营人员',
           });
 
+          showResult(result);
+
           if (!result.success) {
-            messageApi.error(result.message);
             return;
           }
 
-          messageApi.success(result.message);
           setRefundModalOpen(false);
         }}
       />

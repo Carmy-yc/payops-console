@@ -1,4 +1,4 @@
-import { message, Space, Typography } from 'antd';
+import { Space, Typography } from 'antd';
 import { useMemo, useState } from 'react';
 import { useAuth } from '../../auth/store/AuthProvider';
 import { RefundStats } from '../components/RefundStats';
@@ -6,6 +6,7 @@ import { RefundsFilters, type RefundsFiltersValue } from '../components/RefundsF
 import { RefundsTable } from '../components/RefundsTable';
 import { useRefunds } from '../store/RefundsProvider';
 import { PERMISSIONS } from '../../../shared/constants/permissions';
+import { usePageMessage } from '../../../shared/hooks/usePageMessage';
 
 const { Paragraph, Title } = Typography;
 
@@ -13,7 +14,7 @@ export function RefundsPage() {
   const [filters, setFilters] = useState<RefundsFiltersValue>({});
   const { refunds, orders, approveRefund, rejectRefund, markRefundSuccess } = useRefunds();
   const { currentUser } = useAuth();
-  const [messageApi, contextHolder] = message.useMessage();
+  const { contextHolder, showResult } = usePageMessage();
 
   const canApprove = Boolean(currentUser?.permissions.includes(PERMISSIONS.refundApprove));
 
@@ -75,15 +76,15 @@ export function RefundsPage() {
         canApprove={canApprove}
         onApprove={(refundId) => {
           const result = approveRefund(refundId, currentUser?.name ?? '财务人员');
-          result.success ? messageApi.success(result.message) : messageApi.error(result.message);
+          showResult(result);
         }}
         onReject={(refundId) => {
           const result = rejectRefund(refundId, currentUser?.name ?? '财务人员');
-          result.success ? messageApi.success(result.message) : messageApi.error(result.message);
+          showResult(result);
         }}
         onMarkSuccess={(refundId) => {
           const result = markRefundSuccess(refundId, currentUser?.name ?? '支付网关');
-          result.success ? messageApi.success(result.message) : messageApi.error(result.message);
+          showResult(result);
         }}
       />
     </Space>
