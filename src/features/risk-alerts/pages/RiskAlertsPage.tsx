@@ -1,5 +1,5 @@
 import { message, Space, Typography } from 'antd';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useAudit } from '../../audit-logs/store/AuditProvider';
 import { useAuth } from '../../auth/store/AuthProvider';
 import { PERMISSIONS } from '../../../shared/constants/permissions';
@@ -16,6 +16,10 @@ import {
 import type { RiskAlertFilters as RiskAlertFiltersValue, RiskAlertRecord } from '../types';
 
 const { Paragraph, Title } = Typography;
+type FeedbackMessage = {
+  type: 'success' | 'error';
+  content: string;
+};
 
 export function RiskAlertsPage() {
   const { addLog } = useAudit();
@@ -25,6 +29,7 @@ export function RiskAlertsPage() {
   const [activeAlert, setActiveAlert] = useState<RiskAlertRecord>();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
+  const [feedbackMessage, setFeedbackMessage] = useState<FeedbackMessage | null>(null);
 
   const canHandle = Boolean(currentUser?.permissions.includes(PERMISSIONS.riskHandle));
 
@@ -34,6 +39,20 @@ export function RiskAlertsPage() {
   );
 
   const summary = useMemo(() => summarizeRiskAlerts(alerts), [alerts]);
+
+  useEffect(() => {
+    if (!feedbackMessage) {
+      return;
+    }
+
+    if (feedbackMessage.type === 'success') {
+      messageApi.success(feedbackMessage.content);
+    } else {
+      messageApi.error(feedbackMessage.content);
+    }
+
+    setFeedbackMessage(null);
+  }, [feedbackMessage, messageApi]);
 
   function closeDrawer() {
     setDrawerOpen(false);
@@ -80,7 +99,10 @@ export function RiskAlertsPage() {
             updatedAt: new Date().toISOString(),
           });
 
-          result.success ? messageApi.success(result.message) : messageApi.error(result.message);
+          setFeedbackMessage({
+            type: result.success ? 'success' : 'error',
+            content: result.message,
+          });
 
           if (!result.success) {
             return;

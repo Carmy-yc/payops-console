@@ -2,54 +2,29 @@ import type { PropsWithChildren } from 'react';
 import { createContext, useContext, useMemo, useState } from 'react';
 import { getDefaultRoute } from '../../../shared/constants/routes';
 import { useAudit } from '../../audit-logs/store/AuditProvider';
+import { authSessionManager } from '../lib/AuthSessionManager';
 import { demoUsers } from '../data/demo-users';
 import type { CurrentUser, DemoUserRecord } from '../types';
 
 type AuthContextValue = {
   currentUser: CurrentUser | null;
   isAuthenticated: boolean;
-  login: (account: string, password: string) => boolean;
-  loginWithDemoUser: (user: DemoUserRecord) => void;
+  login: (account: string, password: string) => CurrentUser | null;
+  loginWithDemoUser: (user: DemoUserRecord) => CurrentUser;
   logout: () => void;
 };
 
-const AUTH_STORAGE_KEY = 'payops-console.auth.current-user';
-
 const AuthContext = createContext<AuthContextValue | null>(null);
-
-function toCurrentUser(user: DemoUserRecord): CurrentUser {
-  const { password: _password, ...safeUser } = user;
-  return safeUser;
-}
-
-function getStoredUser(): CurrentUser | null {
-  try {
-    const raw = window.localStorage.getItem(AUTH_STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as CurrentUser) : null;
-  } catch {
-    return null;
-  }
-}
 
 export function AuthProvider({ children }: PropsWithChildren) {
   const { addLog } = useAudit();
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(() =>
-    typeof window === 'undefined' ? null : getStoredUser(),
+    authSessionManager.getStoredUser(),
   );
 
   const persistUser = (user: CurrentUser | null) => {
     setCurrentUser(user);
-
-    if (typeof window === 'undefined') {
-      return;
-    }
-
-    if (user) {
-      window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
-      return;
-    }
-
-    window.localStorage.removeItem(AUTH_STORAGE_KEY);
+    authSessionManager.persistUser(user);
   };
 
   const value = useMemo<AuthContextValue>(
@@ -58,11 +33,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
       isAuthenticated: Boolean(currentUser),
       login(account, password) {
         const normalizedAccount = account.trim();
-        const matchedUser = demoUsers.find(
-          (user) => user.account === normalizedAccount && user.password === password,
-        );
+        const safeUser = authSessionManager.authenticate(account, password, demoUsers);
 
-        if (!matchedUser) {
+        if (!safeUser) {
           addLog({
             actorName: normalizedAccount || '未知账号',
             actorRole: '未认证用户',
@@ -77,10 +50,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
             createdAt: new Date().toISOString(),
             relatedPath: '/login',
           });
-          return false;
+          return null;
         }
 
-        const safeUser = toCurrentUser(matchedUser);
         persistUser(safeUser);
         addLog({
           actorName: safeUser.name,
@@ -96,10 +68,10 @@ export function AuthProvider({ children }: PropsWithChildren) {
           createdAt: new Date().toISOString(),
           relatedPath: getDefaultRoute(safeUser.permissions),
         });
-        return true;
+        return safeUser;
       },
       loginWithDemoUser(user) {
-        const safeUser = toCurrentUser(user);
+        const safeUser = authSessionManager.toCurrentUser(user);
         persistUser(safeUser);
         addLog({
           actorName: safeUser.name,
@@ -115,6 +87,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
           createdAt: new Date().toISOString(),
           relatedPath: getDefaultRoute(safeUser.permissions),
         });
+        return safeUser;
       },
       logout() {
         if (currentUser) {

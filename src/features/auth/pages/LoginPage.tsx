@@ -1,7 +1,7 @@
 import { Alert, Button, Card, Divider, Form, Input, Space, Typography } from 'antd';
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { getDefaultRoute } from '../../../shared/constants/routes';
+import { authSessionManager } from '../lib/AuthSessionManager';
 import { demoUsers } from '../data/demo-users';
 import { useAuth } from '../store/AuthProvider';
 
@@ -20,21 +20,20 @@ export function LoginPage() {
 
   const redirectTo = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname;
 
-  const handleSuccess = (defaultPath: string) => {
-    navigate(redirectTo ?? defaultPath, { replace: true });
+  const handleSuccess = (targetPath: string) => {
+    navigate(targetPath, { replace: true });
   };
 
   const handleFinish = (values: LoginFormValues) => {
-    const matchedUser = demoUsers.find((user) => user.account === values.account.trim());
-    const succeeded = login(values.account, values.password);
+    const loggedInUser = login(values.account, values.password);
 
-    if (!succeeded) {
+    if (!loggedInUser) {
       setErrorMessage('账号或密码错误，请使用下方演示账号快速进入。');
       return;
     }
 
     setErrorMessage('');
-    handleSuccess(getDefaultRoute(matchedUser?.permissions));
+    handleSuccess(authSessionManager.resolvePostLoginPath(loggedInUser.permissions, redirectTo));
   };
 
   return (
@@ -83,8 +82,13 @@ export function LoginPage() {
                   </div>
                   <Button
                     onClick={() => {
-                      loginWithDemoUser(user);
-                      handleSuccess(getDefaultRoute(user.permissions));
+                      const loggedInUser = loginWithDemoUser(user);
+                      handleSuccess(
+                        authSessionManager.resolvePostLoginPath(
+                          loggedInUser.permissions,
+                          redirectTo,
+                        ),
+                      );
                     }}
                   >
                     快速进入

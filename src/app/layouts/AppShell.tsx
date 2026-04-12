@@ -1,6 +1,7 @@
 import { Avatar, Button, Layout, Menu, Space, Tag, Typography } from 'antd';
 import { useMemo } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { authSessionManager } from '../../features/auth/lib/AuthSessionManager';
 import { useAuth } from '../../features/auth/store/AuthProvider';
 import { NAV_ITEMS } from '../../shared/constants/routes';
 
@@ -62,7 +63,7 @@ export function AppShell() {
               size="small"
               onClick={() => {
                 logout();
-                navigate('/login', { replace: true });
+                navigate(authSessionManager.getLogoutRedirectPath(), { replace: true });
               }}
             >
               退出登录

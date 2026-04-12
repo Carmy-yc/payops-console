@@ -1,5 +1,5 @@
 import { message, Space, Typography } from 'antd';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useAudit } from '../../audit-logs/store/AuditProvider';
 import { useAuth } from '../../auth/store/AuthProvider';
 import { ReconciliationDiffTable } from '../components/ReconciliationDiffTable';
@@ -20,6 +20,10 @@ import type { ReconciliationFilters as ReconciliationFiltersValue, Reconciliatio
 const { Paragraph, Title } = Typography;
 
 const defaultBatchDate = mockReconciliationBatches[0]?.batchDate;
+type FeedbackMessage = {
+  type: 'success' | 'error';
+  content: string;
+};
 
 export function ReconciliationPage() {
   const { addLog } = useAudit();
@@ -31,6 +35,7 @@ export function ReconciliationPage() {
   const [activeRecord, setActiveRecord] = useState<ReconciliationRecord>();
   const [modalOpen, setModalOpen] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
+  const [feedbackMessage, setFeedbackMessage] = useState<FeedbackMessage | null>(null);
 
   const selectedBatchDate = filters.batchDate ?? defaultBatchDate;
   const activeBatch =
@@ -60,6 +65,20 @@ export function ReconciliationPage() {
       })),
     [],
   );
+
+  useEffect(() => {
+    if (!feedbackMessage) {
+      return;
+    }
+
+    if (feedbackMessage.type === 'success') {
+      messageApi.success(feedbackMessage.content);
+    } else {
+      messageApi.error(feedbackMessage.content);
+    }
+
+    setFeedbackMessage(null);
+  }, [feedbackMessage, messageApi]);
 
   function closeModal() {
     setModalOpen(false);
@@ -117,7 +136,10 @@ export function ReconciliationPage() {
             updatedAt: new Date().toISOString(),
           });
 
-          result.success ? messageApi.success(result.message) : messageApi.error(result.message);
+          setFeedbackMessage({
+            type: result.success ? 'success' : 'error',
+            content: result.message,
+          });
 
           if (!result.success) {
             return;
