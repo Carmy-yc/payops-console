@@ -4,20 +4,71 @@ import {
   RouterProvider,
   type RouteObject,
 } from 'react-router-dom';
-import { AuditLogsPage } from '../../features/audit-logs/pages/AuditLogsPage';
-import { LoginPage } from '../../features/auth/pages/LoginPage';
+import { Suspense, lazy, type ReactNode } from 'react';
+import { Space, Spin, Typography } from 'antd';
 import { useAuth } from '../../features/auth/store/AuthProvider';
-import { DashboardPage } from '../../features/dashboard/pages/DashboardPage';
-import { ReconciliationPage } from '../../features/reconciliation/pages/ReconciliationPage';
-import { RefundsPage } from '../../features/refunds/pages/RefundsPage';
-import { RiskAlertsPage } from '../../features/risk-alerts/pages/RiskAlertsPage';
-import { OrderDetailPage } from '../../features/transactions/pages/OrderDetailPage';
-import { TransactionsPage } from '../../features/transactions/pages/TransactionsPage';
 import { PERMISSIONS } from '../../shared/constants/permissions';
 import { getDefaultRoute } from '../../shared/constants/routes';
 import { CenteredResult } from '../../shared/ui/CenteredResult';
 import { AppShell } from '../layouts/AppShell';
 import { RequireAuth, RequirePermission } from './guards';
+
+const { Text } = Typography;
+
+const LoginPage = lazy(async () => {
+  const module = await import('../../features/auth/pages/LoginPage');
+  return { default: module.LoginPage };
+});
+
+const DashboardPage = lazy(async () => {
+  const module = await import('../../features/dashboard/pages/DashboardPage');
+  return { default: module.DashboardPage };
+});
+
+const TransactionsPage = lazy(async () => {
+  const module = await import('../../features/transactions/pages/TransactionsPage');
+  return { default: module.TransactionsPage };
+});
+
+const OrderDetailPage = lazy(async () => {
+  const module = await import('../../features/transactions/pages/OrderDetailPage');
+  return { default: module.OrderDetailPage };
+});
+
+const RefundsPage = lazy(async () => {
+  const module = await import('../../features/refunds/pages/RefundsPage');
+  return { default: module.RefundsPage };
+});
+
+const ReconciliationPage = lazy(async () => {
+  const module = await import('../../features/reconciliation/pages/ReconciliationPage');
+  return { default: module.ReconciliationPage };
+});
+
+const RiskAlertsPage = lazy(async () => {
+  const module = await import('../../features/risk-alerts/pages/RiskAlertsPage');
+  return { default: module.RiskAlertsPage };
+});
+
+const AuditLogsPage = lazy(async () => {
+  const module = await import('../../features/audit-logs/pages/AuditLogsPage');
+  return { default: module.AuditLogsPage };
+});
+
+function RouteLoading() {
+  return (
+    <div className="centered-result">
+      <Space direction="vertical" align="center" size={12}>
+        <Spin size="large" />
+        <Text type="secondary">页面加载中，请稍候...</Text>
+      </Space>
+    </div>
+  );
+}
+
+function withRouteSuspense(element: ReactNode) {
+  return <Suspense fallback={<RouteLoading />}>{element}</Suspense>;
+}
 
 export function HomeRedirect() {
   const { currentUser, isAuthenticated } = useAuth();
@@ -36,7 +87,7 @@ const routes: RouteObject[] = [
   },
   {
     path: '/login',
-    element: <LoginPage />,
+    element: withRouteSuspense(<LoginPage />),
   },
   {
     element: (
@@ -47,58 +98,58 @@ const routes: RouteObject[] = [
     children: [
       {
         path: '/dashboard',
-        element: (
+        element: withRouteSuspense(
           <RequirePermission permission={PERMISSIONS.dashboardView}>
             <DashboardPage />
-          </RequirePermission>
+          </RequirePermission>,
         ),
       },
       {
         path: '/transactions',
-        element: (
+        element: withRouteSuspense(
           <RequirePermission permission={PERMISSIONS.transactionList}>
             <TransactionsPage />
-          </RequirePermission>
+          </RequirePermission>,
         ),
       },
       {
         path: '/transactions/:orderId',
-        element: (
+        element: withRouteSuspense(
           <RequirePermission permission={PERMISSIONS.transactionDetail}>
             <OrderDetailPage />
-          </RequirePermission>
+          </RequirePermission>,
         ),
       },
       {
         path: '/refunds',
-        element: (
+        element: withRouteSuspense(
           <RequirePermission permission={PERMISSIONS.refundList}>
             <RefundsPage />
-          </RequirePermission>
+          </RequirePermission>,
         ),
       },
       {
         path: '/reconciliation',
-        element: (
+        element: withRouteSuspense(
           <RequirePermission permission={PERMISSIONS.reconciliationView}>
             <ReconciliationPage />
-          </RequirePermission>
+          </RequirePermission>,
         ),
       },
       {
         path: '/risk-alerts',
-        element: (
+        element: withRouteSuspense(
           <RequirePermission permission={PERMISSIONS.riskList}>
             <RiskAlertsPage />
-          </RequirePermission>
+          </RequirePermission>,
         ),
       },
       {
         path: '/audit-logs',
-        element: (
+        element: withRouteSuspense(
           <RequirePermission permission={PERMISSIONS.auditView}>
             <AuditLogsPage />
-          </RequirePermission>
+          </RequirePermission>,
         ),
       },
     ],
