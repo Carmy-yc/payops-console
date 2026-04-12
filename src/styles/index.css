@@ -117,7 +117,8 @@ body {
 
 .app-shell__user-trigger {
   height: auto;
-  padding-inline: 8px !important;
+  padding: 0 !important;
+  border-radius: 999px;
 }
 
 .app-shell__user-menu {

@@ -1,6 +1,5 @@
 import {
   DesktopOutlined,
-  DownOutlined,
   LogoutOutlined,
   MoonOutlined,
   SunOutlined,
@@ -144,12 +143,13 @@ export function AppShell() {
               }}
               trigger={['click']}
             >
-              <Button size="small" type="text" className="app-shell__user-trigger">
-                <Space size={8}>
-                  <Avatar size={28}>{currentUser?.name?.slice(0, 1) ?? 'U'}</Avatar>
-                  <Text>{currentUser?.name ?? '未登录'}</Text>
-                  <DownOutlined />
-                </Space>
+              <Button
+                size="small"
+                type="text"
+                className="app-shell__user-trigger"
+                aria-label="用户菜单"
+              >
+                <Avatar size={28}>{currentUser?.name?.slice(0, 1) ?? 'U'}</Avatar>
               </Button>
             </Dropdown>
           </Space>
