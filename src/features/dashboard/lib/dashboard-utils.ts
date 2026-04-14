@@ -1,6 +1,9 @@
 import { PERMISSIONS, type PermissionKey } from '../../../shared/constants/permissions';
 import type { PayChannel } from '../../transactions/types';
-import { mockDashboardTrendSeries } from '../data/mock-dashboard-trends';
+import {
+  mockDashboardReferenceDate,
+  mockDashboardTrendBaseline,
+} from '../data/mock-dashboard-trends';
 import type { ReconciliationRecord } from '../../reconciliation/types';
 import type { RiskAlertRecord } from '../../risk-alerts/types';
 import type { RefundRecord, TransactionOrder } from '../../transactions/types';
@@ -90,6 +93,13 @@ function formatTrendLabel(date: string) {
   return date.slice(5).replace('-', '/');
 }
 
+function shiftDate(date: string, diffDays: number) {
+  const [year, month, day] = date.split('-').map(Number);
+  const nextDate = new Date(Date.UTC(year, month - 1, day));
+  nextDate.setUTCDate(nextDate.getUTCDate() + diffDays);
+  return nextDate.toISOString().slice(0, 10);
+}
+
 function getReferenceDate(orders: TransactionOrder[]) {
   return orders.reduce((latest, order) => {
     const currentDate = toDateKey(order.createdAt);
@@ -138,12 +148,15 @@ export function buildDashboardTrendSeries(
   todayGrossAmount: number,
   todayOrderCount: number,
 ): DashboardTrendPoint[] {
-  return mockDashboardTrendSeries.map((item) => {
-    const shouldUseRuntimeValue = item.date === referenceDate;
+  const activeReferenceDate = referenceDate || mockDashboardReferenceDate;
+
+  return mockDashboardTrendBaseline.map((item) => {
+    const date = shiftDate(activeReferenceDate, -item.daysAgo);
+    const shouldUseRuntimeValue = item.daysAgo === 0;
 
     return {
-      date: item.date,
-      label: formatTrendLabel(item.date),
+      date,
+      label: formatTrendLabel(date),
       grossAmount: shouldUseRuntimeValue ? todayGrossAmount : item.grossAmount,
       orderCount: shouldUseRuntimeValue ? todayOrderCount : item.orderCount,
     };

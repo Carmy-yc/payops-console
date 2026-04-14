@@ -1,42 +1,44 @@
-export type DashboardTrendSeed = {
-  date: string;
+export type DashboardTrendBaselineSeed = {
+  daysAgo: number;
   grossAmount: number;
   orderCount: number;
 };
 
-export const mockDashboardTrendSeries: DashboardTrendSeed[] = [
+export const mockDashboardReferenceDate = '2026-04-12';
+
+export const mockDashboardTrendBaseline: DashboardTrendBaselineSeed[] = [
   {
-    date: '2026-04-06',
+    daysAgo: 6,
     grossAmount: 182340,
     orderCount: 862,
   },
   {
-    date: '2026-04-07',
+    daysAgo: 5,
     grossAmount: 205180,
     orderCount: 915,
   },
   {
-    date: '2026-04-08',
+    daysAgo: 4,
     grossAmount: 194260,
     orderCount: 884,
   },
   {
-    date: '2026-04-09',
+    daysAgo: 3,
     grossAmount: 223900,
     orderCount: 978,
   },
   {
-    date: '2026-04-10',
+    daysAgo: 2,
     grossAmount: 248600,
     orderCount: 1026,
   },
   {
-    date: '2026-04-11',
+    daysAgo: 1,
     grossAmount: 259420,
     orderCount: 1098,
   },
   {
-    date: '2026-04-12',
+    daysAgo: 0,
     grossAmount: 0,
     orderCount: 0,
   },

@@ -23,6 +23,7 @@ import { NAV_ITEMS } from '../../../shared/constants/routes';
 import { DashboardChannelChart } from '../components/DashboardChannelChart';
 import { DashboardIssueChart } from '../components/DashboardIssueChart';
 import { DashboardTrendChart } from '../components/DashboardTrendChart';
+import { mockDashboardReferenceDate } from '../data/mock-dashboard-trends';
 import {
   buildDashboardChannelStats,
   buildDashboardExceptions,
@@ -128,7 +129,7 @@ export function DashboardPage() {
       <Alert
         type="info"
         showIcon
-        message={`当前看板基于模拟业务日 ${metrics.referenceDate || '2026-04-12'} 汇总展示`}
+        message={`当前看板基于模拟业务日 ${metrics.referenceDate || mockDashboardReferenceDate} 汇总展示`}
         description="交易、退款、对账与风控指标会随着当前演示操作同步刷新。"
       />
 
@@ -199,7 +200,7 @@ export function DashboardPage() {
         <Col xs={24} xl={16}>
           <Card
             title="近 7 日交易趋势"
-            extra={<Typography.Text type="secondary">最后一天随当前看板实时刷新</Typography.Text>}
+            extra={<Typography.Text type="secondary">近 7 日窗口按业务日滚动，当日数据随当前状态刷新</Typography.Text>}
             className="dashboard-card"
           >
             <DashboardTrendChart data={trendSeries} />
