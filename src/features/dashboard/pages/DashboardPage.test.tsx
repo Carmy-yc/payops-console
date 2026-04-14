@@ -1,21 +1,10 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { Link, MemoryRouter, Route, Routes } from 'react-router-dom';
 import { AppProviders } from '../../../app/providers/AppProviders';
-import { demoUsers } from '../../auth/data/demo-users';
 import { ReconciliationPage } from '../../reconciliation/pages/ReconciliationPage';
 import { RiskAlertsPage } from '../../risk-alerts/pages/RiskAlertsPage';
+import { storeAuthSession } from '../../../tests/test-auth-utils';
 import { DashboardPage } from './DashboardPage';
-
-function storeDemoUser(account: string) {
-  const matchedUser = demoUsers.find((user) => user.account === account);
-
-  if (!matchedUser) {
-    throw new Error(`Unknown demo user: ${account}`);
-  }
-
-  const { password: _password, ...safeUser } = matchedUser;
-  window.localStorage.setItem('payops-console.auth.current-user', JSON.stringify(safeUser));
-}
 
 describe('DashboardPage', () => {
   beforeEach(() => {
@@ -42,7 +31,7 @@ describe('DashboardPage', () => {
   }
 
   it('会渲染业务总览区块和当前角色可访问的快捷入口', () => {
-    storeDemoUser('admin');
+    storeAuthSession('admin');
 
     render(
       <AppProviders>
@@ -65,7 +54,7 @@ describe('DashboardPage', () => {
   });
 
   it('处理对账差异和风险告警后，看板异常会同步刷新', async () => {
-    storeDemoUser('admin');
+    storeAuthSession('admin');
 
     render(<DashboardRuntimeApp />);
 

@@ -100,7 +100,7 @@ export const mockOrderEvents: OrderEvent[] = mockOrders.flatMap((order) => {
         `refund-created-${refund.id}`,
         '发起退款',
         `发起退款 ${refund.id}，原因：${refund.reason}。`,
-        '运营人员',
+        '陈晓彤',
         refund.createdAt,
         'refund_created',
       ),
@@ -113,7 +113,7 @@ export const mockOrderEvents: OrderEvent[] = mockOrders.flatMap((order) => {
           `refund-approved-${refund.id}`,
           '退款审核通过',
           `退款 ${refund.id} 已通过财务审核。`,
-          '财务人员',
+          '周雅宁',
           refund.createdAt,
           'refund_approved',
         ),
@@ -141,7 +141,7 @@ export const mockOrderEvents: OrderEvent[] = mockOrders.flatMap((order) => {
           `refund-rejected-${refund.id}`,
           '退款驳回',
           `退款 ${refund.id} 已被驳回。`,
-          '财务人员',
+          '周雅宁',
           refund.createdAt,
           'refund_rejected',
         ),
@@ -151,4 +151,3 @@ export const mockOrderEvents: OrderEvent[] = mockOrders.flatMap((order) => {
 
   return events.sort((left, right) => left.createdAt.localeCompare(right.createdAt));
 });
-

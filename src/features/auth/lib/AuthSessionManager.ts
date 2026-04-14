@@ -1,7 +1,6 @@
 import type { PermissionKey } from '../../../shared/constants/permissions';
 import { PERMISSIONS } from '../../../shared/constants/permissions';
 import { getDefaultRoute } from '../../../shared/constants/routes';
-import type { CurrentUser, DemoUserRecord } from '../types';
 
 type RoutePermissionRule = {
   pathPrefix: string;
@@ -9,6 +8,10 @@ type RoutePermissionRule = {
 };
 
 const AUTH_STORAGE_KEY = 'payops-console.auth.current-user';
+
+type StoredAuthSession = {
+  userId: string;
+};
 
 const routePermissionRules: RoutePermissionRule[] = [
   {
@@ -18,6 +21,10 @@ const routePermissionRules: RoutePermissionRule[] = [
   {
     pathPrefix: '/dashboard',
     permission: PERMISSIONS.dashboardView,
+  },
+  {
+    pathPrefix: '/access-control',
+    permission: PERMISSIONS.accessControlView,
   },
   {
     pathPrefix: '/transactions',
@@ -42,40 +49,43 @@ const routePermissionRules: RoutePermissionRule[] = [
 ];
 
 class AuthSessionManager {
-  toCurrentUser(user: DemoUserRecord): CurrentUser {
-    const { password: _password, ...safeUser } = user;
-    return safeUser;
-  }
-
-  authenticate(account: string, password: string, users: DemoUserRecord[]) {
-    const normalizedAccount = account.trim();
-    const matchedUser = users.find(
-      (user) => user.account === normalizedAccount && user.password === password,
-    );
-
-    return matchedUser ? this.toCurrentUser(matchedUser) : null;
-  }
-
-  getStoredUser(): CurrentUser | null {
+  getStoredSession(): StoredAuthSession | null {
     if (typeof window === 'undefined') {
       return null;
     }
 
     try {
       const raw = window.localStorage.getItem(AUTH_STORAGE_KEY);
-      return raw ? (JSON.parse(raw) as CurrentUser) : null;
+      if (!raw) {
+        return null;
+      }
+
+      const parsed = JSON.parse(raw) as { id?: unknown; userId?: unknown };
+
+      if (typeof parsed.userId === 'string') {
+        return { userId: parsed.userId };
+      }
+
+      if (typeof parsed.id === 'string') {
+        const migratedSession = { userId: parsed.id };
+        window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(migratedSession));
+        return migratedSession;
+      }
+
+      window.localStorage.removeItem(AUTH_STORAGE_KEY);
+      return null;
     } catch {
       return null;
     }
   }
 
-  persistUser(user: CurrentUser | null) {
+  persistSession(userId: string | null) {
     if (typeof window === 'undefined') {
       return;
     }
 
-    if (user) {
-      window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
+    if (userId) {
+      window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({ userId }));
       return;
     }
 

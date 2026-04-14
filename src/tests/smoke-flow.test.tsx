@@ -3,7 +3,6 @@ import { MemoryRouter, Route, Routes, Link } from 'react-router-dom';
 import { AppProviders } from '../app/providers/AppProviders';
 import { RequireAuth, RequirePermission } from '../app/router/guards';
 import { AuditLogsPage } from '../features/audit-logs/pages/AuditLogsPage';
-import { demoUsers } from '../features/auth/data/demo-users';
 import { LoginPage } from '../features/auth/pages/LoginPage';
 import { ReconciliationPage } from '../features/reconciliation/pages/ReconciliationPage';
 import { RefundsPage } from '../features/refunds/pages/RefundsPage';
@@ -12,17 +11,7 @@ import { TransactionsPage } from '../features/transactions/pages/TransactionsPag
 import { OrderDetailPage } from '../features/transactions/pages/OrderDetailPage';
 import { PERMISSIONS } from '../shared/constants/permissions';
 import { CenteredResult } from '../shared/ui/CenteredResult';
-
-function storeDemoUser(account: string) {
-  const matchedUser = demoUsers.find((user) => user.account === account);
-
-  if (!matchedUser) {
-    throw new Error(`Unknown demo user: ${account}`);
-  }
-
-  const { password: _password, ...safeUser } = matchedUser;
-  window.localStorage.setItem('payops-console.auth.current-user', JSON.stringify(safeUser));
-}
+import { storeAuthSession } from './test-auth-utils';
 
 function SmokeNav() {
   return (
@@ -85,7 +74,7 @@ describe('M7 核心冒烟流程', () => {
   });
 
   it('普通运营账号访问审计日志时会被权限拦截', async () => {
-    storeDemoUser('ops');
+    storeAuthSession('ops');
 
     render(
       <AppProviders>
@@ -118,7 +107,7 @@ describe('M7 核心冒烟流程', () => {
   });
 
   it('管理员可以完成退款、对账、风控处理，并在审计日志里看到留痕', async () => {
-    storeDemoUser('admin');
+    storeAuthSession('admin');
 
     render(<SmokeFlowApp />);
 
@@ -156,8 +145,8 @@ describe('M7 核心冒烟流程', () => {
     fireEvent.click(screen.getByRole('link', { name: '去审计' }));
 
     expect(await screen.findByText('审计日志')).toBeInTheDocument();
-    fireEvent.change(screen.getByPlaceholderText('例如：财务同学'), {
-      target: { value: '系统管理员' },
+    fireEvent.change(screen.getByPlaceholderText('例如：周雅宁'), {
+      target: { value: '林越' },
     });
     fireEvent.click(screen.getByRole('button', { name: /查\s*询/ }));
 

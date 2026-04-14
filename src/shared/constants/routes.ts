@@ -45,6 +45,12 @@ export const NAV_ITEMS: NavItem[] = [
     path: '/audit-logs',
     permission: PERMISSIONS.auditView,
   },
+  {
+    key: 'access-control',
+    label: '访问控制',
+    path: '/access-control',
+    permission: PERMISSIONS.accessControlView,
+  },
 ];
 
 export function getDefaultRoute(permissions?: PermissionKey[]) {
