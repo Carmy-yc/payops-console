@@ -1,5 +1,6 @@
 import type { PropsWithChildren } from 'react';
 import { ConfigProvider, theme } from 'antd';
+import { AccessControlProvider } from '../../features/access-control/store/AccessControlProvider';
 import { AuditProvider } from '../../features/audit-logs/store/AuditProvider';
 import { AuthProvider } from '../../features/auth/store/AuthProvider';
 import { ReconciliationProvider } from '../../features/reconciliation/store/ReconciliationProvider';
@@ -22,13 +23,15 @@ function AppConfigProviders({ children }: PropsWithChildren) {
       }}
     >
       <AuditProvider>
-        <AuthProvider>
-          <RefundsProvider>
-            <ReconciliationProvider>
-              <RiskAlertsProvider>{children}</RiskAlertsProvider>
-            </ReconciliationProvider>
-          </RefundsProvider>
-        </AuthProvider>
+        <AccessControlProvider>
+          <AuthProvider>
+            <RefundsProvider>
+              <ReconciliationProvider>
+                <RiskAlertsProvider>{children}</RiskAlertsProvider>
+              </ReconciliationProvider>
+            </RefundsProvider>
+          </AuthProvider>
+        </AccessControlProvider>
       </AuditProvider>
     </ConfigProvider>
   );

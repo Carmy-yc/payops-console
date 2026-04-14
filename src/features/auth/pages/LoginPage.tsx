@@ -1,8 +1,8 @@
 import { Alert, Button, Card, Divider, Form, Input, Space, Typography } from 'antd';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useAccessControl } from '../../access-control/store/AccessControlProvider';
 import { authSessionManager } from '../lib/AuthSessionManager';
-import { demoUsers } from '../data/demo-users';
 import { useAuth } from '../store/AuthProvider';
 
 const { Paragraph, Text, Title } = Typography;
@@ -15,10 +15,22 @@ type LoginFormValues = {
 export function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, loginWithDemoUser } = useAuth();
+  const { users, roles } = useAccessControl();
+  const { login, loginWithUserId } = useAuth();
   const [errorMessage, setErrorMessage] = useState('');
 
   const redirectTo = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname;
+  const demoUsers = useMemo(
+    () =>
+      users
+        .filter((user) => user.status === 'active')
+        .map((user) => ({
+          user,
+          role: roles.find((role) => role.id === user.roleId) ?? null,
+        }))
+        .filter((item) => item.role),
+    [roles, users],
+  );
 
   const handleSuccess = (targetPath: string) => {
     navigate(targetPath, { replace: true });
@@ -71,18 +83,24 @@ export function LoginPage() {
           <Divider>演示账号</Divider>
 
           <Space direction="vertical" size={12} className="full-width">
-            {demoUsers.map((user) => (
+            {demoUsers.map(({ user, role }) => (
               <Card key={user.id} size="small">
                 <div className="login-page__demo-user">
                   <div>
-                    <Text strong>{user.roleName}</Text>
+                    <Text strong>{role?.name ?? '未分配角色'}</Text>
                     <Paragraph type="secondary" className="login-page__demo-meta">
-                      {user.account} / {user.password}
+                      {user.name} · {user.account} / {user.password}
                     </Paragraph>
                   </div>
                   <Button
                     onClick={() => {
-                      const loggedInUser = loginWithDemoUser(user);
+                      const loggedInUser = loginWithUserId(user.id);
+
+                      if (!loggedInUser) {
+                        setErrorMessage('该演示账号当前不可用，请更换其他账号。');
+                        return;
+                      }
+
                       handleSuccess(
                         authSessionManager.resolvePostLoginPath(
                           loggedInUser.permissions,

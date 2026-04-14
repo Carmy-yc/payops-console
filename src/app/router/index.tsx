@@ -55,6 +55,11 @@ const AuditLogsPage = lazy(async () => {
   return { default: module.AuditLogsPage };
 });
 
+const AccessControlPage = lazy(async () => {
+  const module = await import('../../features/access-control/pages/AccessControlPage');
+  return { default: module.AccessControlPage };
+});
+
 function RouteLoading() {
   return (
     <div className="centered-result">
@@ -149,6 +154,14 @@ const routes: RouteObject[] = [
         element: withRouteSuspense(
           <RequirePermission permission={PERMISSIONS.auditView}>
             <AuditLogsPage />
+          </RequirePermission>,
+        ),
+      },
+      {
+        path: '/access-control',
+        element: withRouteSuspense(
+          <RequirePermission permission={PERMISSIONS.accessControlView}>
+            <AccessControlPage />
           </RequirePermission>,
         ),
       },

@@ -49,7 +49,7 @@ export function AuditLogFilters({ onSearch, onReset }: AuditLogFiltersProps) {
           </Col>
           <Col span={4}>
             <Form.Item label="操作人" name="operator">
-              <Input placeholder="例如：财务同学" />
+              <Input placeholder="例如：周雅宁" />
             </Form.Item>
           </Col>
           <Col span={4}>

@@ -1,16 +1,16 @@
 import type { PropsWithChildren } from 'react';
-import { createContext, useContext, useMemo, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { useAccessControl } from '../../access-control/store/AccessControlProvider';
 import { getDefaultRoute } from '../../../shared/constants/routes';
 import { useAudit } from '../../audit-logs/store/AuditProvider';
 import { authSessionManager } from '../lib/AuthSessionManager';
-import { demoUsers } from '../data/demo-users';
-import type { CurrentUser, DemoUserRecord } from '../types';
+import type { CurrentUser } from '../types';
 
 type AuthContextValue = {
   currentUser: CurrentUser | null;
   isAuthenticated: boolean;
   login: (account: string, password: string) => CurrentUser | null;
-  loginWithDemoUser: (user: DemoUserRecord) => CurrentUser;
+  loginWithUserId: (userId: string) => CurrentUser | null;
   logout: () => void;
 };
 
@@ -18,13 +18,26 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: PropsWithChildren) {
   const { addLog } = useAudit();
-  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(() =>
-    authSessionManager.getStoredUser(),
+  const { authenticate, resolveCurrentUser } = useAccessControl();
+  const [sessionUserId, setSessionUserId] = useState<string | null>(() =>
+    authSessionManager.getStoredSession()?.userId ?? null,
   );
 
-  const persistUser = (user: CurrentUser | null) => {
-    setCurrentUser(user);
-    authSessionManager.persistUser(user);
+  const currentUser = useMemo(
+    () => (sessionUserId ? resolveCurrentUser(sessionUserId) : null),
+    [resolveCurrentUser, sessionUserId],
+  );
+
+  useEffect(() => {
+    if (sessionUserId && !currentUser) {
+      setSessionUserId(null);
+      authSessionManager.persistSession(null);
+    }
+  }, [currentUser, sessionUserId]);
+
+  const persistSession = (userId: string | null) => {
+    setSessionUserId(userId);
+    authSessionManager.persistSession(userId);
   };
 
   const value = useMemo<AuthContextValue>(
@@ -33,7 +46,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       isAuthenticated: Boolean(currentUser),
       login(account, password) {
         const normalizedAccount = account.trim();
-        const safeUser = authSessionManager.authenticate(account, password, demoUsers);
+        const safeUser = authenticate(account, password);
 
         if (!safeUser) {
           addLog({
@@ -53,7 +66,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
           return null;
         }
 
-        persistUser(safeUser);
+        persistSession(safeUser.id);
         addLog({
           actorName: safeUser.name,
           actorRole: safeUser.roleName,
@@ -70,9 +83,14 @@ export function AuthProvider({ children }: PropsWithChildren) {
         });
         return safeUser;
       },
-      loginWithDemoUser(user) {
-        const safeUser = authSessionManager.toCurrentUser(user);
-        persistUser(safeUser);
+      loginWithUserId(userId) {
+        const safeUser = resolveCurrentUser(userId);
+
+        if (!safeUser) {
+          return null;
+        }
+
+        persistSession(safeUser.id);
         addLog({
           actorName: safeUser.name,
           actorRole: safeUser.roleName,
@@ -106,10 +124,10 @@ export function AuthProvider({ children }: PropsWithChildren) {
             relatedPath: '/login',
           });
         }
-        persistUser(null);
+        persistSession(null);
       },
     }),
-    [addLog, currentUser],
+    [addLog, authenticate, currentUser, resolveCurrentUser],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

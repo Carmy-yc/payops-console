@@ -9,7 +9,10 @@ export const PERMISSIONS = {
   riskList: 'risk:list',
   riskHandle: 'risk:handle',
   auditView: 'audit:view',
+  accessControlView: 'access-control:view',
+  userManage: 'user:manage',
+  roleManage: 'role:manage',
+  permissionView: 'permission:view',
 } as const;
 
 export type PermissionKey = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
-

@@ -1,22 +1,11 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { demoUsers } from '../../features/auth/data/demo-users';
 import { AppProviders } from '../providers/AppProviders';
 import { LoginPage } from '../../features/auth/pages/LoginPage';
 import { RequirePermission } from './guards';
 import { HomeRedirect } from './index';
 import { PERMISSIONS } from '../../shared/constants/permissions';
-
-function storeDemoUser(account: string) {
-  const matchedUser = demoUsers.find((user) => user.account === account);
-
-  if (!matchedUser) {
-    throw new Error(`Unknown demo user: ${account}`);
-  }
-
-  const { password: _password, ...safeUser } = matchedUser;
-  window.localStorage.setItem('payops-console.auth.current-user', JSON.stringify(safeUser));
-}
+import { storeAuthSession } from '../../tests/test-auth-utils';
 
 describe('首页默认跳转', () => {
   beforeEach(() => {
@@ -39,7 +28,7 @@ describe('首页默认跳转', () => {
   });
 
   it('审计账号访问首页时会跳到审计日志页', async () => {
-    storeDemoUser('auditor');
+    storeAuthSession('auditor');
 
     render(
       <AppProviders>
