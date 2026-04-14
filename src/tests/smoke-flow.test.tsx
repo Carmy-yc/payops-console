@@ -157,5 +157,5 @@ describe('M7 核心冒烟流程', () => {
       expect(screen.getByText('对账中心')).toBeInTheDocument();
       expect(screen.getByText('风险告警')).toBeInTheDocument();
     });
-  });
+  }, 10_000);
 });

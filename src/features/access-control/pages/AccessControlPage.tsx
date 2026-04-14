@@ -11,7 +11,7 @@ export function AccessControlPage() {
       <div>
         <Title level={3}>访问控制</Title>
         <Paragraph type="secondary">
-          这一页承接后台账号、角色和权限配置，当前先落用户管理主链路，并把权限字典作为只读能力接进来。
+          这一页承接后台账号、角色和权限配置，当前已经支持用户管理、角色复制与权限微调，并保留权限字典只读展示。
         </Paragraph>
       </div>
 

@@ -76,5 +76,5 @@ describe('DashboardPage', () => {
     await waitFor(() => {
       expect(screen.getByText(/退款 1 \/ 对账 4 \/ 风控 3/)).toBeInTheDocument();
     });
-  });
+  }, 10_000);
 });

@@ -69,6 +69,63 @@ function buildGroupedOptions(permissionDefinitions: PermissionDefinition[]) {
   }, []);
 }
 
+type PermissionGroupSelectorProps = {
+  groups: Array<{
+    module: PermissionDefinition['module'];
+    label: string;
+    options: CheckboxOptionType[];
+  }>;
+  permissionDefinitions: PermissionDefinition[];
+  value?: PermissionKey[];
+  onChange?: (value: PermissionKey[]) => void;
+};
+
+function PermissionGroupSelector({
+  groups,
+  permissionDefinitions,
+  value = [],
+  onChange,
+}: PermissionGroupSelectorProps) {
+  const permissionOrderMap = useMemo(
+    () => new Map(permissionDefinitions.map((permission, index) => [permission.key, index])),
+    [permissionDefinitions],
+  );
+
+  return (
+    <div>
+      {groups.map((group) => {
+        const groupPermissionKeys = group.options.map((option) => option.value as PermissionKey);
+        const selectedGroupKeys = groupPermissionKeys.filter((key) => value.includes(key));
+
+        return (
+          <div key={group.module} style={{ marginBottom: 16 }}>
+            <Text strong>{group.label}</Text>
+            <div style={{ marginTop: 8 }}>
+              <Checkbox.Group
+                options={group.options}
+                value={selectedGroupKeys}
+                onChange={(nextValues) => {
+                  const nextSelectedKeys = Array.from(
+                    new Set([
+                      ...value.filter((key) => !groupPermissionKeys.includes(key)),
+                      ...(nextValues as PermissionKey[]),
+                    ]),
+                  ).sort(
+                    (left, right) =>
+                      (permissionOrderMap.get(left) ?? 0) - (permissionOrderMap.get(right) ?? 0),
+                  );
+
+                  onChange?.(nextSelectedKeys);
+                }}
+              />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export function RoleEditorModal({
   open,
   mode,
@@ -93,8 +150,8 @@ export function RoleEditorModal({
     form.setFieldsValue({
       name: initialName,
       code: initialCode,
-      description: role.description,
-      permissionKeys: role.permissionKeys,
+      description: role.description ?? undefined,
+      permissionKeys: [...role.permissionKeys],
     });
   }, [form, initialCode, initialName, open, role]);
 
@@ -157,16 +214,10 @@ export function RoleEditorModal({
               },
             ]}
           >
-            <div>
-              {groupedOptions.map((group) => (
-                <div key={group.module} style={{ marginBottom: 16 }}>
-                  <Text strong>{group.label}</Text>
-                  <div style={{ marginTop: 8 }}>
-                    <Checkbox.Group options={group.options} />
-                  </div>
-                </div>
-              ))}
-            </div>
+            <PermissionGroupSelector
+              groups={groupedOptions}
+              permissionDefinitions={permissionDefinitions}
+            />
           </Form.Item>
         </Form>
       </Space>
