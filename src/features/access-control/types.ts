@@ -56,6 +56,18 @@ export type CurrentUser = {
   landingPath?: string;
 };
 
+export type AccessControlOperator = {
+  name: string;
+  roleName: string;
+};
+
+export type AccessControlActionResult = {
+  success: boolean;
+  message: string;
+  user?: UserRecord;
+  role?: RoleRecord;
+};
+
 export type CreateUserPayload = {
   account: string;
   name: string;

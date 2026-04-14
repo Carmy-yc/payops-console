@@ -1,4 +1,9 @@
-export type AuditModule = 'auth' | 'refund' | 'reconciliation' | 'risk';
+export type AuditModule =
+  | 'auth'
+  | 'refund'
+  | 'reconciliation'
+  | 'risk'
+  | 'access_control';
 
 export type AuditResult = 'success' | 'failed';
 
@@ -14,9 +19,23 @@ export type AuditActionType =
   | 'reconciliation_ignore'
   | 'risk_resolve'
   | 'risk_review'
-  | 'risk_dismiss';
+  | 'risk_dismiss'
+  | 'user_create'
+  | 'user_update'
+  | 'user_enable'
+  | 'user_disable'
+  | 'role_clone'
+  | 'role_update'
+  | 'role_delete';
 
-export type AuditTargetType = 'session' | 'refund' | 'reconciliation' | 'risk' | 'order';
+export type AuditTargetType =
+  | 'session'
+  | 'refund'
+  | 'reconciliation'
+  | 'risk'
+  | 'order'
+  | 'user'
+  | 'role';
 
 export type AuditLogRecord = {
   id: string;

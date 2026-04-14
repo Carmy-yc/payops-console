@@ -1,4 +1,7 @@
-import { Alert, Card, Space, Typography } from 'antd';
+import { Alert, Space, Tabs, Typography } from 'antd';
+import { PermissionCatalogTab } from '../components/PermissionCatalogTab';
+import { RoleManagementTab } from '../components/RoleManagementTab';
+import { UserManagementTab } from '../components/UserManagementTab';
 
 const { Paragraph, Title } = Typography;
 
@@ -8,18 +11,36 @@ export function AccessControlPage() {
       <div>
         <Title level={3}>访问控制</Title>
         <Paragraph type="secondary">
-          当前已完成 RBAC 真相层和认证链路切换，后续会在这里继续接入用户、角色和权限管理页面。
+          这一页承接后台账号、角色和权限配置，当前先落用户管理主链路，并把权限字典作为只读能力接进来。
         </Paragraph>
       </div>
 
-      <Card>
-        <Alert
-          type="info"
-          showIcon
-          message="第一批已完成基础切换"
-          description="当前版本已经改为基于 用户 -> 角色 -> 权限 解析登录态，管理界面会在下一批继续补齐。"
-        />
-      </Card>
+      <Alert
+        type="info"
+        showIcon
+        message="当前访问控制基于 RBAC 运行"
+        description="登录态已经由 用户 -> 角色 -> 权限 解析，后续可以继续在这里扩展角色配置和权限分配。"
+      />
+
+      <Tabs
+        items={[
+          {
+            key: 'users',
+            label: '用户管理',
+            children: <UserManagementTab />,
+          },
+          {
+            key: 'roles',
+            label: '角色管理',
+            children: <RoleManagementTab />,
+          },
+          {
+            key: 'permissions',
+            label: '权限字典',
+            children: <PermissionCatalogTab />,
+          },
+        ]}
+      />
     </Space>
   );
 }

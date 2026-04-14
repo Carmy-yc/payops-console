@@ -29,6 +29,10 @@ export const auditModuleConfig: Record<AuditModule, LabelConfig> = {
     label: '风险告警',
     color: 'error',
   },
+  access_control: {
+    label: '访问控制',
+    color: 'processing',
+  },
 };
 
 export const auditResultConfig: Record<AuditResult, LabelConfig> = {
@@ -90,6 +94,34 @@ export const auditActionConfig: Record<AuditActionType, { label: string; module:
   risk_dismiss: {
     label: '标记误报',
     module: 'risk',
+  },
+  user_create: {
+    label: '创建用户',
+    module: 'access_control',
+  },
+  user_update: {
+    label: '编辑用户',
+    module: 'access_control',
+  },
+  user_enable: {
+    label: '启用用户',
+    module: 'access_control',
+  },
+  user_disable: {
+    label: '停用用户',
+    module: 'access_control',
+  },
+  role_clone: {
+    label: '复制角色',
+    module: 'access_control',
+  },
+  role_update: {
+    label: '编辑角色',
+    module: 'access_control',
+  },
+  role_delete: {
+    label: '删除角色',
+    module: 'access_control',
   },
 };
 
